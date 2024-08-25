@@ -23,9 +23,9 @@ local function EntityBase()
         UUID = EntityUUIDGenerator:CreateUUID();
         --Event values that are only accessed internally
         _Died = Instance.new("BindableEvent");
-        --Actual bindable event that scripts can listen to
-        Died = _EntityBase._Died.Event;
     }
+    --Actual bindable event that scripts can listen to
+    _EntityBase.Died = _EntityBase._Died.Event;
     return _EntityBase
 end
 
@@ -47,12 +47,12 @@ end
 function Entity.new(params:{
     Model: instance
 })
-    local _Entity = setmetatable(EntityBase(),Entity)
-    _Entity.Model = params.Model
+    local self = setmetatable(EntityBase(),Entity)
+    self.Model = params.Model
 
-    Entity.Entities[_Entity.UUID] = _Entity
+    Entity.Entities[self.UUID] = self
     
-    return _Entity
+    return self
 end
 
 --Disposer

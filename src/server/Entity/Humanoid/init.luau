@@ -20,12 +20,11 @@ function Humanoid.new(params: {
     Model: instance
 })
     --Create object inheriting superclass properties
-    local _Humanoid = Entity.new({
+    local self = Entity.new({
         Model = params.Model
     })
-    _Humanoid = setmetatable(_Humanoid,Humanoid)
-
-    return _Humanoid
+    
+    return setmetatable(self,Humanoid)
 end
 
 return Humanoid

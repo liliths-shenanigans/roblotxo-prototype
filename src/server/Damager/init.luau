@@ -40,12 +40,12 @@ end
 
 --Constructor
 function Damager.new()
-    local _Damager = DamagerBase()
-    _Damager = setmetatable(_Damager,Damager)
+    local self = DamagerBase()
+    self = setmetatable(self,Damager)
 
-    Damager.Damagers[_Damager.UUID] = _Damager
+    Damager.Damagers[self.UUID] = self
 
-    return _Damager
+    return self
 end
 
 --Disposer

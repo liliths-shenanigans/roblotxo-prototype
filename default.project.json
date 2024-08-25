@@ -67,6 +67,11 @@
       "$properties": {
         "RespectFilteringEnabled": true
       }
+    },
+    "Players":{
+      "$properties": {
+        "CharacterAutoLoads": false
+      }
     }
   }
 }
