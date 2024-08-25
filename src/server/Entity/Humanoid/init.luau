@@ -27,3 +27,5 @@ function Humanoid.new(params: {
 
     return _Humanoid
 end
+
+return Humanoid

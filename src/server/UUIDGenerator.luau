@@ -8,7 +8,7 @@ UUIDGenerator.__index = UUIDGenerator
 
 UUIDGenerators = {} --Container for all UUIDGenerator objects
 --Base classes
-local UUIDGeneratorBase = function()
+local function UUIDGeneratorBase()
     return {
         Name = "";
         UUIDS = {}
