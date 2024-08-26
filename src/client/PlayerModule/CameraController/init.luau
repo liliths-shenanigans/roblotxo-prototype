@@ -29,6 +29,7 @@ local function CameraControllerBase()
         PrimaryOffset = Vector3.new(); --Offset that determines height of camera and aim lean
         SecondaryOffset = Vector3.new(); --Offset for recoil and effects
         GoalCFrame = CFrame.new(); --Goal CFrame for tweening
+        GoalHumanoidRootPartCFrame = CFrame.new(); --Goal CFrame for tweening but for the root part
         UpdateCamera = true; --camera will not update when this is false
         MaxAimLeanOffset = MAX_AIMLEAN_OFFSET;
         Height = CAMERA_HEIGHT;
@@ -52,6 +53,7 @@ end
 function CameraController:Update(deltaTime: number)
     local _MouseLocation = UserInputService:GetMouseLocation()
     local _CenterOffsetPreAdjust = (Vector2.new(_MouseLocation.X,self.Camera.ViewportSize.Y-_MouseLocation.Y) - (self.Camera.ViewportSize*0.5))/(self.Camera.ViewportSize*MAX_AIMLEAN_SCREEN_FRACTION*0.5)
+    print(_CenterOffsetPreAdjust)
     local _Angle = math.atan(_CenterOffsetPreAdjust.Y/_CenterOffsetPreAdjust.X)
     if _CenterOffsetPreAdjust.X < 0 then
         _Angle = _Angle - math.pi
@@ -60,13 +62,18 @@ function CameraController:Update(deltaTime: number)
     local _MaxClampY = math.abs(math.sin(_Angle))
     local _CenterOffset = Vector2.new(math.clamp(_CenterOffsetPreAdjust.X,-_MaxClampX,_MaxClampX),math.clamp(_CenterOffsetPreAdjust.Y,-_MaxClampY,_MaxClampY))
     --local _OffsetMagnitude = self.MaxAimLeanOffset*math.sqrt(_CenterOffset.X^2 + _CenterOffset.Y^2)
-    local _OffsetVector = Vector3.new(_CenterOffset.X*self.MaxAimLeanOffset,self.Height,-_CenterOffset.Y*self.MaxAimLeanOffset)
+    local _OffsetVector = Vector3.new(_CenterOffset.X*self.MaxAimLeanOffset,0,-_CenterOffset.Y*self.MaxAimLeanOffset)
     --print(_OffsetVector)
 
     if self.HumanoidRootPart then
-        self.GoalCFrame = CFrame.new(self.HumanoidRootPart.Position+_OffsetVector)*CFrame.Angles(-math.pi/2,0,0)
+        self.GoalCFrame = CFrame.new(self.HumanoidRootPart.Position+_OffsetVector+Vector3.new(0,self.Height,0))*CFrame.Angles(-math.pi/2,0,0)
         local _LerpedCF = self.Camera.CFrame:Lerp(self.GoalCFrame,BASE_LERP_FRACTION*TimeScaleService.LocalTimeScale)
         self.Camera.CFrame = _LerpedCF
+
+        local _MouseLocationWorldSpace = self.Camera:ViewportPointToRay(_MouseLocation.X,_MouseLocation.Y,self.Camera.CFrame.Y).Origin
+        self.GoalHumanoidRootPartCFrame = CFrame.new(self.HumanoidRootPart.Position,Vector3.new(_MouseLocationWorldSpace.X,self.HumanoidRootPart.CFrame.Y,_MouseLocationWorldSpace.Z))
+        local _LerpedHumanoidRootPartCFrame = self.HumanoidRootPart.CFrame:Lerp(self.GoalHumanoidRootPartCFrame,BASE_LERP_FRACTION*TimeScaleService.LocalTimeScale)
+        self.HumanoidRootPart.CFrame = _LerpedHumanoidRootPartCFrame
     end
 end
 
