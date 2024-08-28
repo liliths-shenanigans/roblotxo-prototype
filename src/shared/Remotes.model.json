@@ -8,6 +8,14 @@
         {
             "ClassName": "RemoteEvent",
             "Name": "InitializeCharacter"
+        },
+        {
+            "ClassName": "RemoteEvent",
+            "Name": "CreateManagedVisual"
+        },
+        {
+            "ClassName": "RemoteEvent",
+            "Name": "UpdateManagedVisualBehavior"
         }
     ]
 }

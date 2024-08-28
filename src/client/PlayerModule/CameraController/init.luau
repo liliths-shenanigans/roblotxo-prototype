@@ -1,3 +1,4 @@
+--Singleton for camera control
 --Initial variables
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -41,7 +42,6 @@ end
 function CameraController:OnCurrentCameraChanged() --Fires both whenever workspace.CurrentCamera is changed OR when CameraController is instantiated for the first time
     self.Camera = workspace.CurrentCamera
     self.Camera.CameraType = Enum.CameraType.Scriptable
-    print(self.Camera.CameraType)
 end
 
 function CameraController:OnCharacterCreated(characterObject)
@@ -53,7 +53,6 @@ end
 function CameraController:Update(deltaTime: number)
     local _MouseLocation = UserInputService:GetMouseLocation()
     local _CenterOffsetPreAdjust = (Vector2.new(_MouseLocation.X,self.Camera.ViewportSize.Y-_MouseLocation.Y) - (self.Camera.ViewportSize*0.5))/(self.Camera.ViewportSize*MAX_AIMLEAN_SCREEN_FRACTION*0.5)
-    print(_CenterOffsetPreAdjust)
     local _Angle = math.atan(_CenterOffsetPreAdjust.Y/_CenterOffsetPreAdjust.X)
     if _CenterOffsetPreAdjust.X < 0 then
         _Angle = _Angle - math.pi
@@ -90,7 +89,7 @@ function CameraController.new()
         self:OnCharacterCreated(characterObject)
     end)
 
-    RunService:BindToRenderStep("After default camera", 201, function(deltaTime)
+    RunService:BindToRenderStep("After default camera",201,function(deltaTime)
         self:Update(deltaTime)
     end)
 

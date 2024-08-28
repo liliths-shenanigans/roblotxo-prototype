@@ -17,13 +17,18 @@ local function DamagerBase()
     _DamagerBase = {
         Damage = 0;
         BypassInvulnerability = false;
+        Owner = nil; --entity class
         UUID = DamagerUUIDGenerator:CreateUUID();
+        --Event values that are only accessed internally
+        _HitTarget = Instance.new("BindableEvent")
     }
+    --Actual bindable event that scripts can listen to
+    _DamagerBase.HitTarget = _HitTarget.Event;
     return _DamagerBase
 end
 
 --Functions
-function Damager:DealDamageToEntity(entity: {
+function Damager:AttemptDamageEntity(entity: {
     Invulnerable: boolean;
     Targetable: boolean;
     TakeDamage: any; --function
@@ -32,10 +37,14 @@ function Damager:DealDamageToEntity(entity: {
     if entity.Targetable then
         if entity.Invulnerable == false or self.BypassInvulnerability == true then
             _ReturnState = true
-
+            self._HitTarget:Fire()
+            if self.OnHit then
+                self:OnHit()
+            end
             entity:TakeDamage(self.Damage)
         end
     end
+    return _ReturnState
 end
 
 --Constructor

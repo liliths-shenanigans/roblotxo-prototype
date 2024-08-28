@@ -5,7 +5,7 @@ local StartTick = time()
 --service initialization
 local TimeScaleService = {} --header
 
-TimeScaleService.ScaledTick = nil
+TimeScaleService.ScaledTick = -1
 
 TimeScaleService.GlobalTimeScale = 1 --affects non-players only
 TimeScaleService.LocalTimeScale = 1 --affects players only
@@ -75,7 +75,7 @@ end
 
 --internal functions
 local function UpdateScaledTick(time: number,step: number)
-    if not TimeScaleService.ScaledTick then --Makes it so the scaled tick starts counting when the RunService connection actually happens. Not necessary just for my sanity lol
+    if TimeScaleService.ScaledTick == -1 then --Makes it so the scaled tick starts counting when the RunService connection actually happens. Not necessary just for my sanity lol
         TimeScaleService.ScaledTick = 0
     end
 

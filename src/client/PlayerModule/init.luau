@@ -1,5 +1,6 @@
 --[[
-Requires & initializes CameraController and ControlsController singletons.
+Requires & initializes CameraController and ControlsController singletons
+Also requires & initializes ManagedVisual class
 This module itself is called by its parent script.
 todo:
 • Make CameraModule under this
@@ -13,7 +14,11 @@ todo:
     • For now use default ControlModule but eventually supersede existing roblox ControlModule with custom fork
         • Support for dynamic keybinds (e.g. active item from spacebar to F or something, idk)
 ]]
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+
 local PlayerModule = {}
 PlayerModule.CameraController = require(script.CameraController)
+PlayerModule.ManagedVisual = require(script.ManagedVisual)
 
 return PlayerModule
