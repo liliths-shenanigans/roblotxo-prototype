@@ -8,6 +8,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Remotes = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Remotes")
 
 local TimeScaleService = require(ReplicatedStorage.Shared:WaitForChild("TimeScaleService"))
+local ManagedVisualBehaviors = require(ReplicatedStorage.Shared:WaitForChild("ManagedVisualBehaviors"))
 local LastTick = TimeScaleService.ScaledTick
 
 local CreateManagedVisualRemote = Remotes:WaitForChild("CreateManagedVisual")
@@ -26,8 +27,9 @@ type ManagedVisualClass = {
     TimeElapsed: number;
     Lifespan: number;
     ForceStopUpdate: boolean?;
-    Update: ((self: any) -> nil);
-    OnLifespanExpire: ((self: any) -> nil)?;
+    ManagedVisualBehavior: string; --index in ManagedVisualBehaviors to pull Update and OnLifespanExpire from
+    --Update: ((self: any) -> nil);
+    --OnLifespanExpire: ((self: any) -> nil)?;
 }
 
 --Functions
@@ -49,6 +51,7 @@ end
 
 local function UpdateAllManagedVisuals()
     local _dt = TimeScaleService.ScaledTick - LastTick
+    LastTick = TimeScaleService.ScaledTick
     for i,self in pairs(ManagedVisual.ManagedVisuals) do
         self.TimeElapsed += _dt
         if self.ForceStopUpdate == true then
@@ -69,9 +72,11 @@ function ManagedVisual.new(toManage: ManagedVisualClass)
     local self: ManagedVisualClass = setmetatable(toManage,ManagedVisual)
     self.ForceStopUpdate = false
     self.TimeElapsed = TimeScaleService.ScaledTick - self.FiredTick
-    if not self.Update then
-        error("Update function missing when attempting to create ManagedVisual",2)
+    if not ManagedVisualBehaviors[self.ManagedVisualBehavior] then
+        error("Behaviors missing when attempting to create ManagedVisual",2)
     else
+        self.Update = ManagedVisualBehaviors[self.ManagedVisualBehavior].Update
+        self.OnLifespanExpire = ManagedVisualBehaviors[self.ManagedVisualBehavior].OnLifespanExpire
         ManagedVisual.ManagedVisuals[self.UUID] = self
     end
     return self
@@ -84,5 +89,6 @@ function ManagedVisual:Dispose()
 end
 
 RunService:BindToRenderStep("Update ManagedVisuals",99,UpdateAllManagedVisuals)
+CreateManagedVisualRemote.OnClientEvent:Connect(ManagedVisual.new)
 
 return ManagedVisual
