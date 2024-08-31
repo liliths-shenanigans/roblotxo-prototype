@@ -1,11 +1,14 @@
 --initial variables
 local RunService = game:GetService("RunService")
+local GetServerTickRemote = game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Remotes"):WaitForChild("GetServerTick")
 local StartTick = time()
 
 --service initialization
 local TimeScaleService = {} --header
 
 TimeScaleService.ScaledTick = -1
+local TickOffset = 0 --for client synchronization
+local LocalScaledTick = -1 --for client synchronization
 
 TimeScaleService.GlobalTimeScale = 1 --affects non-players only
 TimeScaleService.LocalTimeScale = 1 --affects players only
@@ -73,17 +76,64 @@ function TimeScaleService.UpdateTimeScale()
     return _GlobalTimeScale,_LocalTimeScale
 end
 
+--only runs if on client, tick synchronization
+if RunService:IsClient() then
+    local function GetServerClientTickOffset()
+        local _ServerTick = GetServerTickRemote:InvokeServer()
+        --local _Ping = game.Players.LocalPlayer:GetNetworkPing()/2
+        --_ServerTick += _Ping
+        return TimeScaleService.ScaledTick-_ServerTick
+    end
+
+    local InitFrameNumber = 5
+    local Frame = 0
+
+    local ValuesToKeep = 10
+    local RecordedValues = {}
+
+    RunService.RenderStepped:Connect(function()
+        Frame += 1
+        if Frame == InitFrameNumber then
+            Frame = 0
+            local _Offset = GetServerClientTickOffset()
+            table.insert(RecordedValues,_Offset)
+            RecordedValues[11] = nil
+            _Offset = 0
+            for i,_Value in pairs(RecordedValues) do
+                _Offset += _Value
+            end
+            _Offset /= #RecordedValues
+            TickOffset = _Offset
+            --print(TickOffset)
+        end
+    end)
+end
+
 --internal functions
 local function UpdateScaledTick(time: number,step: number)
-    if TimeScaleService.ScaledTick == -1 then --Makes it so the scaled tick starts counting when the RunService connection actually happens. Not necessary just for my sanity lol
-        TimeScaleService.ScaledTick = 0
+    if LocalScaledTick == -1 then --Makes it so the scaled tick starts counting when the RunService connection actually happens. Not necessary just for my sanity lol
+        LocalScaledTick = 0
     end
 
     local _ScaledStep = step*TimeScaleService.GlobalTimeScale*TimeScaleService.LocalTimeScale
     
-    TimeScaleService.ScaledTick = TimeScaleService.ScaledTick+_ScaledStep
+    LocalScaledTick += _ScaledStep
+    if RunService:IsServer() then
+        TimeScaleService.ScaledTick = LocalScaledTick
+    else
+        TimeScaleService.ScaledTick = LocalScaledTick-TickOffset
+    end
 end
 
+local function GetServerTick(player)
+    if RunService:IsServer() then
+        return TimeScaleService.ScaledTick
+    end
+end
+
+if RunService:IsServer() then
+    GetServerTickRemote.OnServerInvoke = GetServerTick
+end
 TimeScaleService.ModifiersUpdated:Connect(TimeScaleService.UpdateTimeScale)
 
 --timescale loop

@@ -12,6 +12,7 @@ local ManagedVisualBehaviors = require(ReplicatedStorage.Shared:WaitForChild("Ma
 local LastTick = TimeScaleService.ScaledTick
 
 local CreateManagedVisualRemote = Remotes:WaitForChild("CreateManagedVisual")
+local UpdateManagedVisualBehaviorRemote = Remotes:WaitForChild("UpdateManagedVisualBehavior")
 
 --Class table initialization
 local ManagedVisual = {}
@@ -26,6 +27,7 @@ type ManagedVisualClass = {
     FiredTick: number;
     TimeElapsed: number;
     Lifespan: number;
+    Speed: number?;
     ForceStopUpdate: boolean?;
     ManagedVisualBehavior: string; --index in ManagedVisualBehaviors to pull Update and OnLifespanExpire from
     --Update: ((self: any) -> nil);
@@ -71,9 +73,12 @@ end
 function ManagedVisual.new(toManage: ManagedVisualClass)
     local self: ManagedVisualClass = setmetatable(toManage,ManagedVisual)
     self.ForceStopUpdate = false
-    self.TimeElapsed = TimeScaleService.ScaledTick - self.FiredTick
+    self.FiredTick = TimeScaleService.ScaledTick
+    --self.TimeElapsed = TimeScaleService.ScaledTick - self.FiredTick
     if not ManagedVisualBehaviors[self.ManagedVisualBehavior] then
         error("Behaviors missing when attempting to create ManagedVisual",2)
+    elseif not self.Model then
+        error("Model is missing when attempting to create ManagedVisual",2)
     else
         self.Update = ManagedVisualBehaviors[self.ManagedVisualBehavior].Update
         self.OnLifespanExpire = ManagedVisualBehaviors[self.ManagedVisualBehavior].OnLifespanExpire
@@ -88,7 +93,16 @@ function ManagedVisual:Dispose()
     ManagedVisual.ManagedVisuals[self.UUID] = nil
 end
 
+--internal functions
+local function OnUpdateManagedVisualBehaviorRemoteFire(uuid,tochange)
+    local self = ManagedVisual.ManagedVisuals[uuid]
+    if self then
+        self:UpdateBehavior(tochange)
+    end
+end
+
 RunService:BindToRenderStep("Update ManagedVisuals",99,UpdateAllManagedVisuals)
 CreateManagedVisualRemote.OnClientEvent:Connect(ManagedVisual.new)
+UpdateManagedVisualBehaviorRemote.OnClientEvent:Connect(OnUpdateManagedVisualBehaviorRemoteFire)
 
 return ManagedVisual

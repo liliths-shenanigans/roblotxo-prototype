@@ -13,8 +13,8 @@ Damager.Damagers = {} --Container for all constructed Damager objects
 
 --Base class
 local function DamagerBase()
-    local _DamagerBase
-    _DamagerBase = {
+    local self
+    self = {
         Damage = 0;
         BypassInvulnerability = false;
         Owner = nil; --entity class
@@ -23,8 +23,8 @@ local function DamagerBase()
         _HitTarget = Instance.new("BindableEvent")
     }
     --Actual bindable event that scripts can listen to
-    _DamagerBase.HitTarget = _HitTarget.Event;
-    return _DamagerBase
+    self.HitTarget = self.Event;
+    return self
 end
 
 --Functions

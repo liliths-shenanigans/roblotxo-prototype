@@ -16,6 +16,10 @@
         {
             "ClassName": "RemoteEvent",
             "Name": "UpdateManagedVisualBehavior"
+        },
+        {
+            "ClassName": "RemoteFunction",
+            "Name": "GetServerTick"
         }
     ]
 }
